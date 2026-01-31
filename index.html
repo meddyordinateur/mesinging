@@ -9,8 +9,8 @@
       padding: 0;
       width: 100%;
       height: 100%;
-      overflow: hidden;
       background: black;
+      overflow: hidden;
       cursor: pointer;
     }
 
@@ -18,51 +18,48 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      user-select: none;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
 
-  <video id="video" autoplay muted playsinline>
-    <source src="video.mp4" type="video/mp4">
-  </video>
+<video id="video" autoplay muted playsinline loop>
+  <source src="video.mp4" type="video/mp4">
+</video>
 
-  <script>
-    const video = document.getElementById("video");
+<script>
+  const video = document.getElementById("video");
 
-    const grainDuration = 0.01; // durée du grain (en secondes)
-    let grainStart = 0;
-    let granularActive = false;
+  const grainDuration = 0.02; // 20 ms = plus audible
+  let grainStart = 0;
+  let granularActive = false;
 
-    // Phase granulaire : clic maintenu
-    document.addEventListener("mousedown", () => {
-      grainStart = video.currentTime;
-      granularActive = true;
-
-      video.muted = false; // réactivation du son
-    });
-
-    // Retour à la lecture normale
-    document.addEventListener("mouseup", () => {
-      granularActive = false;
-
-      video.muted = true; // recoupe le son
-    });
-
-    // Boucle granulaire
-    video.addEventListener("timeupdate", () => {
-      if (!granularActive) return;
-
+  function granularLoop() {
+    if (granularActive) {
       if (video.currentTime > grainStart + grainDuration) {
         video.currentTime = grainStart;
       }
-    });
+    }
+    requestAnimationFrame(granularLoop);
+  }
 
-      video.addEventListener("ended", () => {
-    video.currentTime = 0;
+  document.addEventListener("pointerdown", () => {
+    grainStart = video.currentTime;
+    granularActive = true;
+
+    video.muted = false;
     video.play();
   });
-  </script>
+
+  document.addEventListener("pointerup", () => {
+    granularActive = false;
+    video.muted = true;
+  });
+
+  granularLoop();
+</script>
 
 </body>
 </html>
